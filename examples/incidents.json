@@ -1,0 +1,12 @@
+[
+  {
+    "incident_id": "INC-001",
+    "service": "payments",
+    "symptom": "high latency"
+  },
+  {
+    "incident_id": "INC-002",
+    "service": "orders",
+    "symptom": "increased error rate"
+  }
+]

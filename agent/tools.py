@@ -58,3 +58,19 @@ def get_recent_deployment(service: str) -> dict:
     }
 
     return deployments.get(service, {})
+
+ALLOWED_TOOLS = {
+    "get_metrics": get_metrics,
+    "get_logs": get_logs,
+    "get_recent_deployment": get_recent_deployment,
+}
+
+
+def execute_tool(name: str, arguments: dict):
+
+    if name not in ALLOWED_TOOLS:
+        raise ValueError(
+            f"Tool '{name}' is not authorized"
+        )
+
+    return ALLOWED_TOOLS[name](**arguments)

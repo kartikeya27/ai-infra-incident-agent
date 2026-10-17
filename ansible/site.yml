@@ -1,0 +1,23 @@
+---
+- name: Configure infrastructure incident agent demo
+  hosts: demo
+  gather_facts: false
+
+  tasks:
+
+    - name: Create demo directory
+      ansible.builtin.file:
+        path: /tmp/incident-agent-demo
+        state: directory
+        mode: "0755"
+
+    - name: Create service configuration
+      ansible.builtin.copy:
+        dest: /tmp/incident-agent-demo/config.json
+        mode: "0644"
+        content: |
+          {
+            "service": "payments",
+            "environment": "demo",
+            "managed_by": "ansible"
+          }

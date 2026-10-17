@@ -1,0 +1,64 @@
+# Python virtual environment
+.venv/
+venv/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest cache
+.pytest_cache/
+
+# Type checker / tooling caches
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# macOS
+.DS_Store
+
+# IDE/editor
+.vscode/
+.idea/
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Generated deployment metadata
+deployment.json
+
+# Build/package artifacts
+dist/
+build/
+*.egg-info/
+*.tar.gz
+
+# Ansible temporary/retry files
+*.retry
+.ansible/
+
+# Terraform, if we add it later
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# SSH/private keys - NEVER commit these
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+
+# Local credentials/config
+credentials.json
+secrets.json

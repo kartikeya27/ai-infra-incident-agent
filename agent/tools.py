@@ -1,76 +1,123 @@
+import json
+from pathlib import Path
 from typing import Any
 
+from agent.kubernetes_tools import (
+    get_kubernetes_pods,
+)
+from agent.rag.runbook_tool import (
+    search_operational_runbooks,
+)
 
-def get_metrics(service: str) -> dict[str, Any]:
-    mock_data = {
-        "payments": {
-            "cpu": 91,
-            "memory": 72,
-            "error_rate": 0.16,
-            "p95_latency_ms": 890,
-        },
-        "orders": {
-            "cpu": 45,
-            "memory": 62,
-            "error_rate": 0.21,
-            "p95_latency_ms": 420,
-        },
-    }
 
-    return mock_data.get(
-        service,
-        {
-            "cpu": 0,
-            "memory": 0,
-            "error_rate": 0,
-            "p95_latency_ms": 0,
-        },
+DATA_DIR = Path(
+    "data"
+)
+
+
+def get_metrics(
+    service: str,
+) -> dict[str, Any]:
+
+    path = (
+        DATA_DIR
+        / "metrics"
+        / f"{service}.json"
+    )
+
+    if not path.exists():
+
+        return {}
+
+    return json.loads(
+        path.read_text(
+            encoding="utf-8"
+        )
     )
 
 
-def get_logs(service: str) -> list[str]:
+def get_logs(
+    service: str,
+) -> list[str]:
 
-    logs = {
-        "payments": [
-            "ERROR database connection pool exhausted",
-            "WARN request latency above threshold",
-        ],
-        "orders": [
-            "ERROR upstream inventory service timeout",
-            "WARN retry attempt 3",
-        ],
-    }
+    path = (
+        DATA_DIR
+        / "logs"
+        / f"{service}.log"
+    )
 
-    return logs.get(service, [])
+    if not path.exists():
+
+        return []
+
+    return (
+        path.read_text(
+            encoding="utf-8"
+        )
+        .splitlines()
+    )
 
 
-def get_recent_deployment(service: str) -> dict:
+def get_recent_deployment(
+    service: str,
+) -> dict:
 
     deployments = {
         "payments": {
-            "version": "v2.8.1",
-            "deployed_minutes_ago": 12,
+            "version":
+                "v2.8.1",
+
+            "deployed_minutes_ago":
+                12,
         },
+
         "orders": {
-            "version": "v5.2.0",
-            "deployed_minutes_ago": 1440,
+            "version":
+                "v5.2.0",
+
+            "deployed_minutes_ago":
+                1440,
         },
     }
 
-    return deployments.get(service, {})
+    return deployments.get(
+        service,
+        {},
+    )
+
 
 ALLOWED_TOOLS = {
-    "get_metrics": get_metrics,
-    "get_logs": get_logs,
-    "get_recent_deployment": get_recent_deployment,
+    "get_metrics":
+        get_metrics,
+
+    "get_logs":
+        get_logs,
+
+    "get_recent_deployment":
+        get_recent_deployment,
+
+    "get_kubernetes_pods":
+        get_kubernetes_pods,
+
+    "search_runbooks":
+        search_operational_runbooks,
 }
 
 
-def execute_tool(name: str, arguments: dict):
+def execute_tool(
+    name: str,
+    arguments: dict,
+):
 
     if name not in ALLOWED_TOOLS:
+
         raise ValueError(
-            f"Tool '{name}' is not authorized"
+            f"Tool '{name}' "
+            "is not authorized"
         )
 
-    return ALLOWED_TOOLS[name](**arguments)
+    return ALLOWED_TOOLS[
+        name
+    ](
+        **arguments
+    )

@@ -9,5 +9,34 @@ def test_agent_completes():
     )
 
     assert result.completed is True
+
     assert result.hypothesis is not None
-    assert len(result.evidence) == 3
+
+    assert len(
+        result.evidence
+    ) == 4
+
+    tools_used = [
+        item["tool"]
+        for item in result.evidence
+    ]
+
+    assert (
+        "get_metrics"
+        in tools_used
+    )
+
+    assert (
+        "get_logs"
+        in tools_used
+    )
+
+    assert (
+        "search_runbooks"
+        in tools_used
+    )
+
+    assert (
+        "get_recent_deployment"
+        in tools_used
+    )

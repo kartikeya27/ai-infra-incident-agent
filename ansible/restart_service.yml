@@ -1,0 +1,24 @@
+---
+- name: Controlled service remediation demo
+  hosts: demo
+  gather_facts: false
+
+  vars:
+    service_name: payments
+
+  tasks:
+
+    - name: Display requested remediation
+      ansible.builtin.debug:
+        msg: >
+          Approved remediation requested
+          for {{ service_name }}
+
+    - name: Write remediation audit record
+      ansible.builtin.copy:
+        dest: /tmp/incident-agent-demo/last-remediation.txt
+        mode: "0644"
+        content: |
+          service={{ service_name }}
+          action=restart-demo
+          source=awx

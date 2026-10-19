@@ -1,0 +1,4 @@
+2026-10-17T12:00:01Z INFO order request started
+2026-10-17T12:00:03Z WARN inventory request retry=1
+2026-10-17T12:00:06Z WARN inventory request retry=2
+2026-10-17T12:00:10Z ERROR inventory upstream timeout

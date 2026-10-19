@@ -1,0 +1,4 @@
+2026-10-17T12:00:01Z INFO request started
+2026-10-17T12:00:02Z WARN database pool usage=95
+2026-10-17T12:00:03Z ERROR database connection pool exhausted
+2026-10-17T12:00:03Z ERROR request failed status=500

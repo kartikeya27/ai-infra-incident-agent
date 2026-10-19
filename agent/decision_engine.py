@@ -1,68 +1,159 @@
-from agent.models import AgentDecision
+from agent.llm_client import (
+    InfrastructureLLM,
+)
+from agent.models import (
+    AgentArguments,
+    AgentDecision,
+)
+from config.settings import (
+    USE_REAL_LLM,
+)
 
 
-def choose_action(
+_llm = None
+
+
+def make_arguments(
+    service: str | None = None,
+    namespace: str | None = None,
+    query: str | None = None,
+    environment: str | None = None,
+) -> AgentArguments:
+
+    return AgentArguments(
+        service=service,
+        namespace=namespace,
+        query=query,
+        environment=environment,
+    )
+
+
+def deterministic_decision(
     service: str,
-    evidence: list[dict]
+    evidence: list[dict],
 ) -> AgentDecision:
-    """
-    Decide which diagnostic action should run next.
-
-    This first implementation is deterministic.
-    Later it will be replaced by a real LLM.
-    """
 
     tools_used = {
         item["tool"]
         for item in evidence
     }
 
-    if "get_metrics" not in tools_used:
+    if (
+        "get_metrics"
+        not in tools_used
+    ):
+
         return AgentDecision(
             action="get_metrics",
-            arguments={
-                "service": service
-            },
+            arguments=
+                make_arguments(
+                    service=service
+                ),
             reason=(
-                "I need current service health metrics "
-                "before forming a hypothesis."
+                "Collect service metrics first."
             ),
+            hypothesis=None,
         )
 
-    if "get_logs" not in tools_used:
+    if (
+        "get_logs"
+        not in tools_used
+    ):
+
         return AgentDecision(
             action="get_logs",
-            arguments={
-                "service": service
-            },
+            arguments=
+                make_arguments(
+                    service=service
+                ),
             reason=(
-                "The metrics have been collected. "
-                "I now need logs to identify the failure mode."
+                "Inspect service logs "
+                "for the failure mode."
             ),
+            hypothesis=None,
         )
 
-    if "get_recent_deployment" not in tools_used:
+    if (
+        "search_runbooks"
+        not in tools_used
+    ):
+
         return AgentDecision(
-            action="get_recent_deployment",
-            arguments={
-                "service": service
-            },
+            action="search_runbooks",
+            arguments=
+                make_arguments(
+                    query=(
+                        "database connection "
+                        "pool exhausted"
+                    )
+                ),
             reason=(
-                "I need deployment history to determine "
-                "whether the incident correlates with a recent release."
+                "Search operational runbooks "
+                "for matching symptoms."
             ),
+            hypothesis=None,
+        )
+
+    if (
+        "get_recent_deployment"
+        not in tools_used
+    ):
+
+        return AgentDecision(
+            action=
+                "get_recent_deployment",
+
+            arguments=
+                make_arguments(
+                    service=service
+                ),
+
+            reason=(
+                "Check whether a deployment "
+                "occurred near the incident."
+            ),
+
+            hypothesis=None,
         )
 
     return AgentDecision(
         action="conclude",
-        arguments={},
+
+        arguments=
+            make_arguments(),
+
         reason=(
-            "Metrics, logs, and deployment history provide "
-            "enough evidence to form a hypothesis."
+            "Enough evidence has "
+            "been collected."
         ),
+
         hypothesis=(
-            "A recent deployment may have introduced a "
-            "database connection issue that is contributing "
-            "to elevated latency and error rate."
+            "A recent deployment may "
+            "have introduced a database "
+            "connection handling problem."
         ),
+    )
+
+
+def choose_action(
+    service: str,
+    evidence: list[dict],
+) -> AgentDecision:
+
+    global _llm
+
+    if not USE_REAL_LLM:
+
+        return deterministic_decision(
+            service=service,
+            evidence=evidence,
+        )
+
+    if _llm is None:
+
+        _llm = InfrastructureLLM()
+
+    return _llm.choose_action(
+        service=service,
+        evidence=evidence,
     )

@@ -1,0 +1,7 @@
+{
+  "cpu": 45,
+  "memory": 62,
+  "error_rate": 0.21,
+  "p95_latency_ms": 420,
+  "connection_pool_usage": 0.55
+}

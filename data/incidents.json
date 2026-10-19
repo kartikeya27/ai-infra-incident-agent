@@ -1,0 +1,14 @@
+[
+  {
+    "incident_id": "INC-001",
+    "service": "payments",
+    "severity": "SEV2",
+    "symptom": "High latency and elevated 5xx errors"
+  },
+  {
+    "incident_id": "INC-002",
+    "service": "orders",
+    "severity": "SEV3",
+    "symptom": "Inventory dependency timeouts"
+  }
+]

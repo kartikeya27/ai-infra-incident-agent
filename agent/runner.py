@@ -1,9 +1,18 @@
+from agent.decision_engine import (
+    choose_action,
+)
+from agent.observability import (
+    tracked_execute_tool,
+)
+from agent.prometheus_metrics import (
+    ACTIVE_INCIDENTS,
+    AGENT_RUNS,
+    AGENT_STEPS,
+)
 from agent.state import AgentState
-from agent.decision_engine import choose_action
-from agent.observability import tracked_execute_tool
 
 
-MAX_STEPS = 6
+MAX_STEPS = 8
 
 
 def run_agent(
@@ -16,36 +25,106 @@ def run_agent(
         service=service,
     )
 
-    for step in range(MAX_STEPS):
+    ACTIVE_INCIDENTS.inc()
 
-        decision = choose_action(
+    final_status = "incomplete"
+    executed_steps = 0
+
+    try:
+
+        for step in range(MAX_STEPS):
+
+            decision = choose_action(
+                service=service,
+                evidence=state.evidence,
+            )
+
+            executed_steps = (
+                step + 1
+            )
+
+            print(
+                "\n-------------------------"
+            )
+            print(
+                f"Step {step + 1}"
+            )
+            print(
+                "-------------------------"
+            )
+            print(
+                f"Action: {decision.action}"
+            )
+            print(
+                f"Reason: {decision.reason}"
+            )
+
+            if (
+                decision.action
+                == "conclude"
+            ):
+
+                state.hypothesis = (
+                    decision.hypothesis
+                )
+
+                state.completed = True
+
+                final_status = "success"
+
+                break
+
+            arguments = (
+                decision.arguments.model_dump(
+                    exclude_none=True
+                )
+            )
+
+            result = tracked_execute_tool(
+                incident_id=incident_id,
+                tool_name=
+                    decision.action,
+                arguments=
+                    arguments,
+            )
+
+            state.evidence.append({
+                "step":
+                    step + 1,
+
+                "tool":
+                    decision.action,
+
+                "arguments":
+                    arguments,
+
+                "reason":
+                    decision.reason,
+
+                "result":
+                    result,
+            })
+
+        AGENT_STEPS.observe(
+            executed_steps
+        )
+
+        AGENT_RUNS.labels(
             service=service,
-            evidence=state.evidence,
-        )
+            status=final_status,
+        ).inc()
 
-        print("\n-------------------------")
-        print(f"Step {step + 1}")
-        print("-------------------------")
-        print(f"Action: {decision.action}")
-        print(f"Reason: {decision.reason}")
+        return state
 
-        if decision.action == "conclude":
-            state.hypothesis = decision.hypothesis
-            state.completed = True
-            break
+    except Exception:
 
-        result = tracked_execute_tool(
-            incident_id=incident_id,
-            tool_name=decision.action,
-            arguments=decision.arguments,
-        )
+        AGENT_RUNS.labels(
+            service=service,
+            status="failure",
+        ).inc()
 
-        state.evidence.append({
-            "step": step + 1,
-            "tool": decision.action,
-            "arguments": decision.arguments,
-            "reason": decision.reason,
-            "result": result,
-        })
+        raise
 
-    return state
+    finally:
+
+        ACTIVE_INCIDENTS.dec()

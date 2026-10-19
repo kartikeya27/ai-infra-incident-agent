@@ -1,64 +1,57 @@
-# Python virtual environment
+# Python
 .venv/
 venv/
-
-# Python cache files
 __pycache__/
 *.py[cod]
-*$py.class
 
-# Pytest cache
+# Testing
 .pytest_cache/
-
-# Type checker / tooling caches
-.mypy_cache/
-.ruff_cache/
 .coverage
 htmlcov/
 
-# macOS
-.DS_Store
-
-# IDE/editor
-.vscode/
-.idea/
-
-# Environment variables / secrets
+# Environment / API secrets
 .env
 .env.*
 !.env.example
 
-# Logs
+# macOS
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# General logs
 *.log
 logs/
 
-# Generated deployment metadata
+# Keep synthetic demo logs
+!data/logs/
+!data/logs/*.log
+
+# Generated files
 deployment.json
 
-# Build/package artifacts
+# Build output
 dist/
 build/
 *.egg-info/
 *.tar.gz
 
-# Ansible temporary/retry files
+# Ansible
 *.retry
 .ansible/
 
-# Terraform, if we add it later
+# Terraform future usage
 .terraform/
 *.tfstate
 *.tfstate.*
 .terraform.lock.hcl
 
-# SSH/private keys - NEVER commit these
+# Credentials / private keys
 *.pem
 *.key
-id_rsa
-id_rsa.pub
-id_ed25519
-id_ed25519.pub
-
-# Local credentials/config
 credentials.json
 secrets.json
+id_rsa
+id_ed25519

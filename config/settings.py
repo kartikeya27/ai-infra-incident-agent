@@ -11,10 +11,12 @@ OPENAI_API_KEY = os.getenv(
     "",
 )
 
+
 OPENAI_MODEL = os.getenv(
     "OPENAI_MODEL",
     "",
 )
+
 
 USE_REAL_LLM = (
     os.getenv(
@@ -30,10 +32,12 @@ AWX_URL = os.getenv(
     "",
 )
 
+
 AWX_TOKEN = os.getenv(
     "AWX_TOKEN",
     "",
 )
+
 
 AWX_JOB_TEMPLATE_ID = int(
     os.getenv(
@@ -41,3 +45,9 @@ AWX_JOB_TEMPLATE_ID = int(
         "0",
     )
 )
+
+
+EXECUTION_BACKEND = os.getenv(
+    "EXECUTION_BACKEND",
+    "local",
+).lower()

@@ -7,27 +7,21 @@ from pydantic import (
 
 
 class AgentArguments(BaseModel):
-    """
-    Structured arguments used by agent tools.
-
-    All fields are optional because different tools
-    require different subsets of arguments.
-    """
 
     model_config = ConfigDict(
         extra="forbid"
     )
 
     service: str | None = None
+
     namespace: str | None = None
+
     query: str | None = None
+
     environment: str | None = None
 
 
 class AgentDecision(BaseModel):
-    """
-    Structured decision returned by the agent.
-    """
 
     model_config = ConfigDict(
         extra="forbid"
@@ -38,6 +32,7 @@ class AgentDecision(BaseModel):
         "get_logs",
         "get_recent_deployment",
         "get_kubernetes_pods",
+        "get_kubernetes_events",
         "search_runbooks",
         "restart_service",
         "conclude",

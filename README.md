@@ -1,93 +1,98 @@
 # AI Infrastructure Incident Response Agent
 
-A production-oriented infrastructure AI agent prototype
-that demonstrates how LLM-style reasoning can safely
-interact with deterministic infrastructure tools.
+A production-oriented AI infrastructure incident-response prototype that demonstrates how an LLM-based agent can investigate infrastructure incidents while keeping execution deterministic, observable, auditable, and protected by policy and human approval.
 
-## Problem
+The project combines:
 
-Infrastructure incidents often require engineers to
-manually correlate information across:
+- AI agent reasoning
+- structured tool calling
+- Python infrastructure tooling
+- Kubernetes diagnostics
+- operational runbook retrieval
+- Prometheus observability
+- human-in-the-loop approvals
+- Ansible automation
+- optional AWX / Ansible Automation Platform execution
+- CI/CD
+- agent evaluation and testing
 
-- metrics
-- logs
+---
+
+# Why This Project Exists
+
+Infrastructure incidents often require an engineer to correlate information from several systems:
+
+- service metrics
+- application logs
 - deployment history
-- configuration
-- service health
+- Kubernetes pod state
+- Kubernetes events
+- operational runbooks
+- infrastructure configuration
+- previous remediation procedures
 
-This project demonstrates how an agent can dynamically
-select diagnostic tools based on evidence collected
-during an incident.
+A traditional script follows a predefined workflow.
 
-## Core Design Principle
+An AI agent can instead decide what evidence it needs next based on the information already collected.
 
-The agent reasons.
+However, giving an LLM unrestricted infrastructure access is unsafe.
 
-Deterministic tools execute.
+This project therefore follows one core principle:
 
-The model is never the security boundary.
+> **The agent reasons. Deterministic tools execute. The model is never the security boundary.**
 
-## Architecture
+The agent may recommend a change, but high-risk infrastructure actions must pass through policy enforcement and human approval before execution.
 
-Incident
-→ Decision Engine
-→ Structured AgentDecision
-→ Policy Validation
-→ Allowlisted Tool
-→ Infrastructure Evidence
-→ Agent State
-→ Next Decision
-→ Conclusion
+---
 
-## Features
+# High-Level Architecture
 
-- Python 3 agent loop
-- Pydantic structured outputs
-- allowlisted infrastructure tools
-- maximum execution step limit
-- risk-based approval policy
-- correlation IDs
-- tool latency tracking
-- deterministic evaluation
-- Ansible infrastructure automation
-- GitHub Actions CI
-- Jenkins pipeline
-- deployment metadata handoff
-
-## Agent vs Traditional Automation
-
-Traditional automation follows predefined steps.
-
-The agent chooses its next diagnostic action based on
-the previous tool result.
-
-Example:
-
-Incident
-→ metrics
-→ abnormal error rate
-→ logs
-→ database connection error
-→ deployment history
-→ recent release
-→ hypothesis
-
-## Safety
-
-Infrastructure safety is enforced through:
-
-- typed model output
-- explicit tool allowlist
-- policy validation
-- risk classification
-- human approval for high-risk actions
-- bounded execution steps
-- deterministic tools
-- audit logging
-
-## Run Locally
-
-Create a virtual environment:
-
-```bash
-python3 -m venv .venv
+```text
+                         Incident
+                            │
+                            ▼
+                    ┌───────────────┐
+                    │ Decision      │
+                    │ Engine        │
+                    │ LLM/Fallback  │
+                    └───────┬───────┘
+                            │
+                            ▼
+                    ┌───────────────┐
+                    │ AgentDecision │
+                    │   Pydantic    │
+                    └───────┬───────┘
+                            │
+                            ▼
+                    ┌───────────────┐
+                    │ Policy Layer  │
+                    └───────┬───────┘
+                            │
+                  ┌─────────┴─────────┐
+                  │                   │
+                  ▼                   ▼
+              LOW RISK             HIGH RISK
+                  │                   │
+                  ▼                   ▼
+          Allowlisted Tool       Approval Request
+                  │                   │
+                  ▼                   ▼
+              Evidence              Human
+                  │             Approve / Reject
+                  │                   │
+                  │              Approved
+                  │                   │
+                  │                   ▼
+                  │          Execution Service
+                  │             /          \
+                  │          Local          AWX
+                  │            │             │
+                  │         Ansible       Ansible
+                  │            │             │
+                  └────────────┴─────┬───────┘
+                                     │
+                                     ▼
+                                Remediation
+                                     │
+                                     ▼
+                                 Verification

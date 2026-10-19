@@ -1,10 +1,13 @@
 import json
+
 from pathlib import Path
 from typing import Any
 
 from agent.kubernetes_tools import (
+    get_kubernetes_events,
     get_kubernetes_pods,
 )
+
 from agent.rag.runbook_tool import (
     search_operational_runbooks,
 )
@@ -26,7 +29,6 @@ def get_metrics(
     )
 
     if not path.exists():
-
         return {}
 
     return json.loads(
@@ -47,7 +49,6 @@ def get_logs(
     )
 
     if not path.exists():
-
         return []
 
     return (
@@ -98,6 +99,9 @@ ALLOWED_TOOLS = {
 
     "get_kubernetes_pods":
         get_kubernetes_pods,
+
+    "get_kubernetes_events":
+        get_kubernetes_events,
 
     "search_runbooks":
         search_operational_runbooks,

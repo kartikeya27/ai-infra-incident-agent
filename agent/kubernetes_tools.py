@@ -2,6 +2,7 @@ from kubernetes import (
     client,
     config,
 )
+
 from kubernetes.config import (
     ConfigException,
 )
@@ -9,13 +10,13 @@ from kubernetes.config import (
 
 def load_kubernetes_config() -> None:
     """
-    Load Kubernetes credentials.
+    Load Kubernetes authentication.
 
-    When running inside Kubernetes:
-        use the pod service account.
+    Inside Kubernetes:
+        service-account credentials are used.
 
-    When running locally:
-        use ~/.kube/config.
+    Local development:
+        ~/.kube/config is used.
     """
 
     try:
@@ -35,17 +36,24 @@ def get_kubernetes_pods(
 
     api = client.CoreV1Api()
 
-    pods = (
-        api.list_namespaced_pod(
-            namespace=namespace
-        )
+    pods = api.list_namespaced_pod(
+        namespace=namespace
     )
 
-    result = []
+    results = []
 
     for pod in pods.items:
 
-        result.append({
+        restart_count = sum(
+            status.restart_count
+            for status
+            in (
+                pod.status.container_statuses
+                or []
+            )
+        )
+
+        results.append({
             "name":
                 pod.metadata.name,
 
@@ -60,6 +68,42 @@ def get_kubernetes_pods(
 
             "node":
                 pod.spec.node_name,
+
+            "restart_count":
+                restart_count,
         })
 
-    return result
+    return results
+
+
+def get_kubernetes_events(
+    namespace: str = "default",
+) -> list[dict]:
+
+    load_kubernetes_config()
+
+    api = client.CoreV1Api()
+
+    events = api.list_namespaced_event(
+        namespace=namespace
+    )
+
+    results = []
+
+    for event in events.items:
+
+        results.append({
+            "type":
+                event.type,
+
+            "reason":
+                event.reason,
+
+            "message":
+                event.message,
+
+            "object":
+                event.involved_object.name,
+        })
+
+    return results

@@ -1,12 +1,19 @@
 ---
 - name: Controlled service remediation demo
   hosts: demo
+
   gather_facts: false
 
   vars:
     service_name: payments
 
   tasks:
+
+    - name: Create remediation audit directory
+      ansible.builtin.file:
+        path: /tmp/incident-agent-demo
+        state: directory
+        mode: "0755"
 
     - name: Display requested remediation
       ansible.builtin.debug:
@@ -21,4 +28,4 @@
         content: |
           service={{ service_name }}
           action=restart-demo
-          source=awx
+          source=approved-remediation

@@ -2,10 +2,12 @@ from dataclasses import (
     asdict,
     dataclass,
 )
+
 from datetime import (
     datetime,
     timezone,
 )
+
 import uuid
 
 
@@ -26,10 +28,18 @@ class ApprovalRequest:
 
     status: str = "pending"
 
+    execution_status: (
+        str | None
+    ) = None
+
+    execution_result: (
+        dict | None
+    ) = None
+
 
 APPROVALS: dict[
     str,
-    ApprovalRequest
+    ApprovalRequest,
 ] = {}
 
 
@@ -45,15 +55,20 @@ def create_approval(
     )
 
     approval = ApprovalRequest(
-        approval_id=approval_id,
+        approval_id=
+            approval_id,
 
-        incident_id=incident_id,
+        incident_id=
+            incident_id,
 
-        action=action,
+        action=
+            action,
 
-        arguments=arguments,
+        arguments=
+            arguments,
 
-        reason=reason,
+        reason=
+            reason,
 
         created_at=(
             datetime.now(

@@ -7,29 +7,32 @@ from config.settings import (
 )
 
 
-def launch_awx_job(
-    service: str,
-    environment: str,
-) -> dict:
-    """
-    Launch a preconfigured AWX job template.
-
-    This is NOT unrestricted shell execution.
-
-    The agent can only trigger a known,
-    controlled AWX template.
-    """
-
-    if not AWX_URL:
-
-        raise RuntimeError(
-            "AWX_URL is not configured."
-        )
+def _headers() -> dict:
 
     if not AWX_TOKEN:
 
         raise RuntimeError(
             "AWX_TOKEN is not configured."
+        )
+
+    return {
+        "Authorization":
+            f"Bearer {AWX_TOKEN}",
+
+        "Content-Type":
+            "application/json",
+    }
+
+
+def launch_awx_job(
+    service: str,
+    environment: str,
+) -> dict:
+
+    if not AWX_URL:
+
+        raise RuntimeError(
+            "AWX_URL is not configured."
         )
 
     if (
@@ -49,14 +52,6 @@ def launch_awx_job(
         "launch/"
     )
 
-    headers = {
-        "Authorization":
-            f"Bearer {AWX_TOKEN}",
-
-        "Content-Type":
-            "application/json",
-    }
-
     payload = {
         "extra_vars": {
             "service":
@@ -69,7 +64,7 @@ def launch_awx_job(
 
     response = requests.post(
         url,
-        headers=headers,
+        headers=_headers(),
         json=payload,
         timeout=30,
     )
@@ -77,3 +72,37 @@ def launch_awx_job(
     response.raise_for_status()
 
     return response.json()
+
+
+def get_awx_job_status(
+    job_id: int,
+) -> dict:
+
+    url = (
+        f"{AWX_URL}/api/v2/"
+        f"jobs/{job_id}/"
+    )
+
+    response = requests.get(
+        url,
+        headers=_headers(),
+        timeout=30,
+    )
+
+    response.raise_for_status()
+
+    data = response.json()
+
+    return {
+        "id":
+            data.get("id"),
+
+        "status":
+            data.get("status"),
+
+        "started":
+            data.get("started"),
+
+        "finished":
+            data.get("finished"),
+    }

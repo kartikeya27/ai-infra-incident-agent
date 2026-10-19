@@ -1,13 +1,30 @@
 RISK_LEVELS = {
-    "get_metrics": "low",
-    "get_logs": "low",
-    "get_recent_deployment": "low",
-    "restart_service": "high",
+
+    "get_metrics":
+        "low",
+
+    "get_logs":
+        "low",
+
+    "get_recent_deployment":
+        "low",
+
+    "get_kubernetes_pods":
+        "low",
+
+    "get_kubernetes_events":
+        "low",
+
+    "search_runbooks":
+        "low",
+
+    "restart_service":
+        "high",
 }
 
 
 def get_risk_level(
-    action: str
+    action: str,
 ) -> str:
 
     return RISK_LEVELS.get(
@@ -17,7 +34,7 @@ def get_risk_level(
 
 
 def requires_approval(
-    action: str
+    action: str,
 ) -> bool:
 
     risk = get_risk_level(
@@ -32,10 +49,12 @@ def requires_approval(
 
 def authorize_action(
     action: str,
-    approved: bool = False
+    approved: bool = False,
 ) -> bool:
 
-    if not requires_approval(action):
+    if not requires_approval(
+        action
+    ):
         return True
 
     return approved

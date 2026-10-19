@@ -2,13 +2,20 @@ from fastapi import (
     FastAPI,
     HTTPException,
 )
-from pydantic import BaseModel
+
+from pydantic import (
+    BaseModel,
+)
 
 from agent.approvals import (
     APPROVALS,
     create_approval,
     get_approval,
     serialize_approval,
+)
+
+from agent.execution_service import (
+    execute_approved_action,
 )
 
 
@@ -20,7 +27,9 @@ app = FastAPI(
 )
 
 
-class NewApproval(BaseModel):
+class NewApproval(
+    BaseModel
+):
 
     incident_id: str
 
@@ -31,7 +40,9 @@ class NewApproval(BaseModel):
     reason: str
 
 
-@app.post("/approvals")
+@app.post(
+    "/approvals"
+)
 def create_new_approval(
     request: NewApproval,
 ):
@@ -55,13 +66,16 @@ def create_new_approval(
     )
 
 
-@app.get("/approvals")
+@app.get(
+    "/approvals"
+)
 def list_approvals():
 
     return [
         serialize_approval(
             approval
         )
+
         for approval
         in APPROVALS.values()
     ]
@@ -112,6 +126,18 @@ def approve(
             ),
         )
 
+    if (
+        approval.status
+        != "pending"
+    ):
+
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Approval is not pending."
+            ),
+        )
+
     approval.status = "approved"
 
     return serialize_approval(
@@ -139,8 +165,65 @@ def reject(
             ),
         )
 
+    if (
+        approval.status
+        != "pending"
+    ):
+
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Approval is not pending."
+            ),
+        )
+
     approval.status = "rejected"
 
     return serialize_approval(
         approval
     )
+
+
+@app.post(
+    "/approvals/{approval_id}/execute"
+)
+def execute(
+    approval_id: str,
+):
+
+    try:
+
+        result = (
+            execute_approved_action(
+                approval_id
+            )
+        )
+
+        return {
+            "approval_id":
+                approval_id,
+
+            "result":
+                result,
+        }
+
+    except ValueError as exc:
+
+        raise HTTPException(
+            status_code=404,
+            detail=str(exc),
+        )
+
+    except PermissionError as exc:
+
+        raise HTTPException(
+            status_code=403,
+            detail=str(exc),
+        )
+
+    except Exception as exc:
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(exc),
+        )
